@@ -26,29 +26,33 @@ user sees is looked up from the ID when the envelope is read.
 **Problem.** An export that contained the key would protect nothing, and anyone given the
 envelope would also have what opens it.
 
-**Pattern.** The envelope holds only what decryption needs besides the secret: the format version,
-the method ID, the method's parameters (the KDF settings, salt and nonce) and the ciphertext.
+**Pattern.** The envelope holds what decryption needs besides the secret: the format version, the
+method ID, which kind of secret opens it, the method's parameters (for a password, the KDF settings
+and salt; the nonce; for a recipient's public key, the ephemeral public key or the encrypted content
+key) and the ciphertext.
 
-- The salt and the nonce are not secrets, and decryption needs them.
-- The password, the key, a private key and a key derived from a password never appear in the
+- The salt and the nonce are not secrets, and decryption needs them. A nonce is never reused with
+  the same key.
+- The password, the key, a private key and any derived key never appear unencrypted in the
   envelope, in any field or encoding.
-- The secret is supplied again at decryption, by the user.
+- The secret that opens the envelope is supplied at decryption.
 
 ## No network calls after load
 
 **Problem.** A page that can send a request after it has loaded can send what the user typed or
 opened. The offline file must also work with no connection at all.
 
-**Pattern.** Once the app has loaded, it makes no network request. The text, files, images and
-secrets a user works with never leave the browser.
+**Pattern.** Every asset is fetched when the page opens, or inlined: no lazy-loaded chunk, and no
+WASM module or font fetched on demand. After that, the app makes no network request.
 
 ## No third-party scripts
 
 **Problem.** A script loaded from another origin runs with full access to the page, and it can
 change without any commit here.
 
-**Pattern.** Every script the app runs is part of its own build. Dependencies, the `@borrowdale/*`
-packages included, are bundled by Vite rather than loaded from a CDN.
+**Pattern.** Every script the app runs is part of its own build. Dependencies, including any of the
+`@borrowdale/core`, `fills`, `text` and `charts` packages the app uses, are bundled by Vite rather
+than loaded from a CDN.
 
 ## Check the published output, not the source
 
@@ -68,5 +72,6 @@ file, and fails on the first violation, naming the file.
 **Problem.** Tests and examples need inputs and secrets, and this repository is public. A real one
 would leak; a realistic-looking one could be taken for a leak.
 
-**Pattern.** Test inputs and secrets are plainly made up: a sample sentence, a throwaway password,
-a key generated for the test. Nothing in a fixture could be mistaken for real data.
+**Pattern.** Test inputs and secrets are plainly made up (a sample sentence, a throwaway password,
+a key generated for the test) or are published test vectors, with their source named. Nothing in a
+fixture is real data.

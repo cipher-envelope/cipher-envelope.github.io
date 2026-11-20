@@ -24,37 +24,40 @@ a merge to `main` publishes. Read [Public content](#public-content) before the f
 
 - A method is either for protecting real data, with a strong modern construction, or part of the
   Learn area, with a classical or weak cipher.
-- An insecure method is never presented as anything else. It is shown in red, with large text
-  saying that it is insecure.
-- Encrypting and then decrypting with the right secret gives back the original input exactly. A
-  method that cannot do that is not added.
+- An insecure method is never presented as anything else. It is shown in red, with very large
+  text saying that it is insecure.
+- For every method meant for real data, and for every file or image, encrypting and then
+  decrypting with the right secret gives back the original input exactly. An envelope saved by an
+  earlier release still opens.
 
 ## The envelope
 
 - The export is this project's own envelope format: versioned and self-describing. It carries the
-  format version, the method ID and the method's parameters: the KDF settings, salt, nonce and the
-  ciphertext.
-- It never carries the password, the key, a private key or a derived key
+  format version, the method ID, the method's parameters (for a password, the KDF settings and
+  salt; the nonce) and the ciphertext.
+- It never carries the password, the key, a private key or any derived key unencrypted
   ([`patterns.md`](patterns.md), "The envelope never holds a secret").
 
 ## Inputs and secrets
 
 - The inputs are a text, a text file or an image. A file or an image is encrypted as its bytes, so
   it decrypts to the identical file.
-- The secret is one of a password (turned into a key by a KDF), a generated random key, a
-  recipient's public key, or a key file.
+- What opens an envelope is one of a password (turned into a key by a KDF), a generated random
+  key, a key file, or a recipient's key pair: the public key encrypts, and the private key, held
+  only by the recipient, decrypts.
 
 ## Interface
 
-- The app is TypeScript built with Vite, with no UI framework. Drawing may use the `@borrowdale/*`
-  packages.
-- Once loaded, the app makes no network request, and it runs no third-party script
+- The app is TypeScript built with Vite, with no UI framework. Drawing may use `@borrowdale/core`,
+  `@borrowdale/fills`, `@borrowdale/text` and `@borrowdale/charts`, which need no UI framework.
+- Every asset is fetched when the page opens, or inlined. After that, the app makes no network
+  request, and it runs no script loaded from another origin
   ([`patterns.md`](patterns.md), "No network calls after load" and "No third-party scripts").
 
 ## Code and tests
 
 - Dependencies are pinned to exact versions, and the lockfile is committed.
-- A test arranges its input, acts once and asserts literal values.
+- A test arranges its input, acts (one operation, or one round trip) and asserts literal values.
 - A new rule gets its check in the same pull request, so the next change cannot break it
   unnoticed.
 
@@ -86,7 +89,7 @@ issues, workflow logs, releases and the app.
   an example, an issue or a screenshot. Use made-up inputs and throwaway secrets.
 - No machine-specific paths, usernames or hostnames, including in a source map or the offline file.
 - No personal data. Commit with a GitHub noreply address.
-- No private working notes, review records or planning documents. A pull request carries the
+- No private working notes or planning documents. A pull request carries the
   source, the tests, the checks and the reader-facing docs the change needs, and nothing else.
 - Link only to public destinations.
 
@@ -100,10 +103,10 @@ issues, workflow logs, releases and the app.
   full stop and no prefix: `Add the contributing guide`. The body says why, when the diff does
   not.
 - All commits land before the pull request opens. Every push to an open pull request runs the
-  whole workflow again.
+  whole workflow again, so answer review feedback in one push.
 - Pull requests are squash-merged, so the title becomes the commit subject on `main`.
 - A pull request description states:
   - what changed and why, with `Fixes #N` where it resolves an issue;
   - what changes for a user: which methods, inputs or secrets, and whether the envelope changes;
-  - which checks ran, locally or in CI, and which did not.
+  - which test commands ran, locally or in CI.
 - Merging a change to the app deploys it. Review the pull request as the publication it is.

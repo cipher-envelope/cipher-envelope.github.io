@@ -1,9 +1,9 @@
 # Contributing
 
-This is the source of cipher-envelope, an encryption tool that runs entirely in the browser. It is
-at an early stage: there is no code yet. Comments on the plans in these guides are welcome now;
-once the app exists, so are corrections: a method that does not decrypt what it encrypted, a wrong
-statement about how secure a method is, a broken layout, or an accessibility problem.
+This is the source of cipher-envelope, an encryption tool that will run entirely in the browser.
+It is at an early stage: there is no code yet. Comments on the plans in these guides are welcome
+now; once the app exists, so are corrections: a method that does not decrypt what it encrypted, a
+wrong statement about how secure a method is, a broken layout, or an accessibility problem.
 
 ## Report a problem
 
@@ -42,9 +42,9 @@ The table grows as code lands.
 The full list is in [`standards.md`](standards.md). The ones that catch most first changes:
 
 - Do not change or reuse a published method ID. Envelopes already saved name their method by it.
-- Never put a password, a key, a private key or a derived key into the envelope.
+- Never put a password, a key, a private key or any derived key into the envelope unencrypted.
 - Do not add a network request after load, or a script from another origin.
-- Show an insecure method as insecure: in red, with large text saying so.
+- Show an insecure method as insecure: in red, with very large text saying so.
 - Encrypting and then decrypting with the right secret must give back the original input.
 
 ### Check it
@@ -58,9 +58,9 @@ The check commands are added with the first code.
 - Write commit subjects as one imperative sentence, for example
   `Fix the decryption of an empty text file`.
 - Keep a pull request to one change, and finish it before opening: each further push runs the
-  whole build again.
-- In the description, say what changed and why, what changes for a user, and which checks you
-  ran.
+  whole build again, so answer review feedback in one push.
+- In the description, say what changed and why, what changes for a user, and which test commands
+  you ran.
 - Pull requests from outside the project may wait for a maintainer to approve their workflow
   run. The maintainer merges, and a merge publishes the app ([`releases.md`](releases.md)).
 
