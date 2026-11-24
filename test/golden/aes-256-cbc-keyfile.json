@@ -1,0 +1,12 @@
+{
+  "format": "cipher-envelope",
+  "version": 1,
+  "method": "aes-256-cbc",
+  "opensWith": "keyfile",
+  "kdf": {
+    "id": "hkdf-sha256",
+    "salt": "AAECAwQFBgcICQoLDA0ODw"
+  },
+  "nonce": "sLGys7S1tre4ubq7vL2-vw",
+  "ciphertext": "xXYaNlxX8n2Sc6N9EdwmXsneawzpP-dhbPSBWC8TWnOjhQKW7Dbi35RvJ_T76JMolNIjudF8ArQd0-WEQ0mAbw"
+}

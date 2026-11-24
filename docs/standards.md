@@ -4,8 +4,8 @@ The rules every change to this repository follows. How recurring problems are so
 [`patterns.md`](patterns.md); how a merged change reaches the hosted app and the offline file is in
 [`releases.md`](releases.md).
 
-There is no code yet. This guide records what is decided; the rules for each part of the app are
-added as that part lands.
+This guide records what is decided; the rules for each part of the app are added as that part
+lands.
 
 Treat everything here as public: the history, pull requests, issues and releases, and the app that
 a merge to `main` publishes. Read [Public content](#public-content) before the first commit.
@@ -22,10 +22,13 @@ a merge to `main` publishes. Read [Public content](#public-content) before the f
 
 ### Secure and insecure methods
 
-- A method is either for protecting real data, with a strong modern construction, or part of the
-  Learn area, with a classical or weak cipher.
-- An insecure method is never presented as anything else. It is shown in red, with very large
-  text saying that it is insecure.
+- Each method is graded recommended, legacy or insecure. A recommended or legacy method is for
+  protecting real data: AES-256-GCM is recommended, and AES-256-CBC is legacy, since it cannot
+  detect a changed envelope, and the page says so when it opens one. An insecure method is a
+  classical or weak cipher in the Learn area.
+- An insecure method is never presented as anything else. It is shown in red, with very large text
+  saying that it is insecure. Sealing with one stays locked until the user ticks "I understand this
+  protects nothing."
 - For every method meant for real data, and for every file or image, encrypting and then
   decrypting with the right secret gives back the original input exactly. An envelope saved by an
   earlier release still opens.
@@ -33,18 +36,52 @@ a merge to `main` publishes. Read [Public content](#public-content) before the f
 ## The envelope
 
 - The export is this project's own envelope format: versioned and self-describing. It carries the
-  format version, the method ID, the method's parameters (for a password, the KDF settings and
-  salt; the nonce) and the ciphertext.
+  format name and version, the method ID, which kind of secret opens it (`opensWith`), what the
+  method needs besides the secret, and the ciphertext. For an AES method that is the nonce and,
+  except for a generated key, a key derivation with its salt: for a password with the PBKDF2
+  iteration count, for a public key with the ephemeral public key. A learning cipher's envelope
+  holds neither a nonce nor a key derivation.
+- Reading is strict. An unknown version, method, key derivation or field is refused and named. A
+  version-1 envelope has a 16-byte salt, 600,000 to 10,000,000 PBKDF2 iterations, a 12-byte nonce
+  for AES-256-GCM or a 16-byte one for AES-256-CBC, and a 32-byte ephemeral key, each in base64url
+  with no padding and only one spelling. An AES-256-GCM ciphertext is at least 16 bytes, and an
+  AES-256-CBC one is whole 16-byte blocks, at least one. A learning cipher's ciphertext is at most
+  2,097,152 characters. A later release may widen these bounds, never narrow them, so every envelope
+  already saved still opens.
+- What an AES method seals is a 4-byte big-endian length, a JSON header, then the content. The
+  header is `{"kind":"text"}` for a text, sealed as UTF-8, or `{"kind":"file","name":…,"type":…}`
+  for a file. So a file's name and type are encrypted, and the envelope shows neither.
 - It never carries the password, the key, a private key or any derived key unencrypted
   ([`patterns.md`](patterns.md), "The envelope never holds a secret").
+- A field name that appears twice in one object (in the envelope, its `kdf`, a private-key file
+  or the header sealed inside) makes it not a v1 envelope. This version reads the last value; a
+  later version may refuse it.
+- A private-key file is a separate version-1 file, not an envelope. It holds the private key
+  unencrypted, so it is kept like a password. It has exactly five fields: `format`
+  (`cipher-envelope-key`), `version` (1), `kind` (`x25519-private`), `publicKey` (32 bytes) and
+  `privateKey`, which holds the key in one form only, whichever browser made it: RFC 8410's PKCS#8
+  prefix for X25519, then the 32-byte key.
 
 ## Inputs and secrets
 
-- The inputs are a text, a text file or an image. A file or an image is encrypted as its bytes, so
-  it decrypts to the identical file.
-- What opens an envelope is one of a password (turned into a key by a KDF), a generated random
-  key, a key file, or a recipient's key pair: the public key encrypts, and the private key, held
-  only by the recipient, decrypts.
+- The inputs are a typed text or any file, a photo included, up to 64 MiB. A file is encrypted as
+  its bytes, so it decrypts to the identical file. A learning cipher takes typed text only, up to 1
+  MiB.
+- What opens an envelope is one of a password (normalised to Unicode NFC, then turned into a key
+  by a KDF), a generated random key, a key file, or a recipient's key pair: the public key
+  encrypts, and the private key, held only by the recipient, decrypts.
+- A learning cipher's keyword is normalised to NFC as well, and then only its letters A to Z
+  count: an accented letter is dropped, not read as its base letter.
+- The key does not depend on the method: the same secret, with the same salt, gives the same key
+  to AES-256-GCM and to AES-256-CBC. What is sealed always begins with 16 bytes that are the same
+  for every text, and for a file depend only on how long its name and type are as the sealed
+  header writes them. So anyone who holds a Strong-lock envelope sealed with a password, a
+  generated key or a key file, and knows whether it holds a text (or, for a file, that length),
+  can build an Old-lock envelope that its secret decrypts to 15 bytes of their choosing. The page
+  reports it as garbled and shows nothing. No way to read a sealed envelope through this is known.
+  A public-key envelope is not open to it: the Old lock takes no public key. Making the key depend
+  on the method would change every key, and every envelope already written, so version 1 keeps
+  this (decided 2026-11-24).
 
 ## Interface
 
@@ -53,11 +90,39 @@ a merge to `main` publishes. Read [Public content](#public-content) before the f
 - Every asset is fetched when the page opens, or inlined. After that, the app makes no network
   request, and it runs no script loaded from another origin
   ([`patterns.md`](patterns.md), "No network calls after load" and "No third-party scripts").
+- A browser may still ask the server for `/favicon.ico` after the page loads; Chromium does. The
+  request carries nothing from the page. An icon of the page's own would stop it, but the policy
+  would then have to allow images, so the page has none (decided 2026-11-24).
+- The built page carries a Content-Security-Policy that allows only its own inline scripts, by
+  hash, and no network connection (`connect-src 'none'`), so the browser blocks the page's fetches
+  and other connections, its sub-resources and its form submissions. A policy cannot stop a page
+  navigating away or using WebRTC; the app has no code that does either. It also allows inline
+  styles and fonts from `data:` URLs, and nothing else: no images, frames or workers. A new kind of
+  asset needs a change to `build/csp.ts`.
+- The policy covers this page only, not other pages served from the same origin. A page there can
+  frame this one and read what is typed into it. It can also register a service worker that
+  answers for the app's address with a copy of its own, without the policy, and goes on answering
+  after that page is gone. So the hosted app is served from an origin it does not share with any
+  other page ([`releases.md`](releases.md), the hosted app).
+- A policy in a `<meta>` tag cannot refuse being framed: `frame-ancestors` works only as a
+  response header, and GitHub Pages sends no custom headers. As of 2026-11-20 the app does not
+  refuse to run in a frame, so any site can frame the hosted app.
 
 ## Code and tests
 
+- The project runs on Node 22.22.2 or later in the 22 line, 24.15.0 or later in the 24 line, or 26
+  or later: the `engines` range in `package.json`, the versions its test tools accept.
+  `.node-version` names 24, the long-term-support release it is built and tested with.
 - Dependencies are pinned to exact versions, and the lockfile is committed.
-- A test arranges its input, acts (one operation, or one round trip) and asserts literal values.
+- A test arranges its input, acts (one operation, one round trip, or one flow through the page) and
+  asserts literal values. Where none can be known, because the value is random or the point is that
+  two results match, it asserts how the two relate. Its body has no loop, no `if` or conditional
+  expression, no function of its own (use the shared `test/thrown.ts` for an error thrown at once,
+  and `await expect(…).rejects` for a rejected promise) and no `try`. It reads no file of the
+  repository except a sample in `test/golden/`. Expected values never come from running the code
+  under test: they come from a published test vector, a textbook example, a case worked by hand, a
+  value computed with another tool that the test names, a sample in `test/golden/`, or the words and
+  numbers the page is meant to show.
 - A new rule gets its check in the same pull request, so the next change cannot break it
   unnoticed.
 
@@ -74,8 +139,10 @@ There is no workflow yet. The one that builds and deploys the app follows these 
 ## Documentation
 
 - `README.md` introduces the app, and `LICENSE` holds the licence. `docs/` holds this guide,
-  [`patterns.md`](patterns.md), [`releases.md`](releases.md) and
-  [`CONTRIBUTING.md`](CONTRIBUTING.md). A new documentation file goes under `docs/`.
+  [`patterns.md`](patterns.md), [`releases.md`](releases.md),
+  [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`third-party-notices.md`](third-party-notices.md),
+  which credits the fonts and the npm code built into the page. A new documentation file goes
+  under `docs/`.
 - Docs change in the pull request that changes the behaviour they describe.
 - State what was measured or checked, with its date, not what is expected to hold.
 

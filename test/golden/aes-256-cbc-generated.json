@@ -1,0 +1,8 @@
+{
+  "format": "cipher-envelope",
+  "version": 1,
+  "method": "aes-256-cbc",
+  "opensWith": "generated",
+  "nonce": "sLGys7S1tre4ubq7vL2-vw",
+  "ciphertext": "hjmPczSJYzQVXJuKNKw930fs899A-D0apxpforCtB9w_EXHMo7blQqvckdchWjoZivUUQZ4Bcen9EV19NR6Ozw"
+}

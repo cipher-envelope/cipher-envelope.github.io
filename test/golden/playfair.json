@@ -1,0 +1,7 @@
+{
+  "format": "cipher-envelope",
+  "version": 1,
+  "method": "playfair",
+  "opensWith": "keyword",
+  "ciphertext": "BMODZBXDNABEKUDMUIXMMOUVIF"
+}

@@ -3,12 +3,16 @@
 How a change gets from a merged pull request into the hosted app and the offline file, how pinned
 dependencies are refreshed, and how to roll back.
 
-There is no code and no workflow yet. This guide records the release model as decided; the
-commands are added when the workflow lands.
+There is no workflow yet. This guide records the release model as decided; the workflow's
+commands are added when it lands.
 
 The app is published in two forms:
 
-- **The hosted app**, on GitHub Pages, rebuilt from `main`.
+- **The hosted app**, on GitHub Pages, rebuilt from `main`, on a custom domain of its own: a
+  subdomain used for nothing else, so the app has an origin it does not share with any other page
+  (see [`standards.md`](standards.md), the page's policy). A project site's default address shares
+  `<owner>.github.io` with every other site of the account, and a project site under the account's
+  own custom domain shares that domain.
 - **The offline file**, a single HTML file attached to a GitHub release, with its hash published
   beside it. A matching hash shows that a download is, byte for byte, the file attached to that
   release; it does not show that the release itself is genuine.
@@ -32,13 +36,16 @@ file: a file already downloaded stays as it was.
    which checks ran locally.
 2. The pull request says what changes for a user: which methods, inputs or secrets, and whether the
    envelope changes.
-3. For a change to a method or the envelope: encrypting and then decrypting with the right secret
-   still gives back the original input, and an envelope saved by each earlier release still opens
-   and gives back its original input.
+3. For a change to a method or the envelope: for a method meant for real data, encrypting and then
+   decrypting with the right secret still gives back the original input exactly, and every envelope
+   in `test/golden/`, which stands for those of earlier releases, still opens to what its test
+   expects.
 4. For a change to the workflow: its permissions and pins still follow
    [`standards.md`](standards.md), "Workflow".
 
-The commands to preview the app locally are added with the first code.
+Preview the app locally with `npm run dev`, or build the offline file with `npm run build` and open
+`dist/cipher-envelope.html` from a local web server. Opening it straight from disk is not checked
+yet. The build also writes `dist/cipher-envelope.html.sha256`.
 
 ## After the merge
 
@@ -53,12 +60,16 @@ The commands to preview the app locally are added with the first code.
 
 1. The release workflow builds the single HTML file from a commit on `main`, computes its hash, and
    attaches both to a new release. A file built on a local machine is never uploaded.
-2. Download the attached file, check it against the published hash, and open it offline.
+2. Download the attached file and its hash file, and check them with `sha256sum -c
+   cipher-envelope.html.sha256` (on macOS, `shasum -a 256 -c cipher-envelope.html.sha256`). Then
+   open the file as under "Before the merge".
 
 A release asset is never replaced in place: the hash already published would no longer match. A
 corrected file is a new release.
 
 ## What is live now
+
+Nothing is live yet. Once the workflows exist:
 
 - The hosted app: the last successful deploy run on `main`. The tip of `main` can be ahead of it by
   documentation-only commits.
