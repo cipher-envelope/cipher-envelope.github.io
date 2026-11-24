@@ -100,15 +100,23 @@ a merge to `main` publishes. Read [Public content](#public-content) before the f
   styles and fonts from `data:` URLs, and nothing else: no images, frames or workers. A new kind of
   asset needs a change to `build/csp.ts` and to the policy written out in `build/output.ts`.
 - The policy covers this page only, not other pages served from the same origin. A page there can
-  frame this one and read what is typed into it. It can also register a service worker that
-  answers for the app's address with a copy of its own, without the policy, and goes on answering
-  after that page is gone. So the hosted app is served from an origin it does not share with any
-  other page ([`releases.md`](releases.md), the hosted app).
+  script this one, in a frame or in a window it opened, and read what is typed into it. It can also
+  register a service worker that answers for the app's address with a copy of its own, without the
+  policy, and goes on answering after that page is gone. So the hosted app is served from an origin
+  it does not share with any other page ([`releases.md`](releases.md), the hosted app).
 - No other repository in the `cipher-envelope` organization publishes a GitHub Pages site. One
   that did would be served from the app's own origin, at `cipher-envelope.github.io/<repository>`.
 - A policy in a `<meta>` tag cannot refuse being framed: `frame-ancestors` works only as a
-  response header, and GitHub Pages sends no custom headers. As of 2026-11-20 the app does not
-  refuse to run in a frame, so any site can frame the hosted app.
+  response header, and GitHub Pages sends no custom headers. So the page refuses by itself
+  (`src/ui/start.ts`): when it is not the top window, it mounts nothing and shows a notice with its
+  own address, to open in a tab of its own. It gives no link, since a tab opened from a sandboxed
+  frame inherits the sandbox, where saving a file fails without a word. A frame that blocks scripts
+  shows only the `<noscript>` line (Chromium, Firefox and WebKit, checked 2026-11-24). The check
+  relies on the host never serving the page for a fenced frame, which takes a response header
+  GitHub Pages cannot send. Not handled yet: a sandboxed page can open the app in a new window,
+  which inherits the sandbox, so saving fails there without a word.
+- Every entry point starts the app through `start`, never `mountWorkbench` directly, so the frame
+  check cannot be skipped. `test/main.test.ts` loads the entry point as a framed page.
 
 ## Code and tests
 

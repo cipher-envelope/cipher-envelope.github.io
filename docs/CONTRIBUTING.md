@@ -48,7 +48,7 @@ file too (`npm run build`).
 |---|---|
 | `index.html`, `src/main.ts`, `src/styles.css` | The page, its entry point and its styles |
 | `src/crypto/` | The methods, the envelope format, sealing and opening |
-| `src/ui/` | The workbench, its drawings, the palette and the English text |
+| `src/ui/` | The start, which refuses to run in a frame; the workbench, its drawings, the palette and the English text |
 | `src/fonts/` | Playfair Display and IBM Plex, and the licence of every font the page carries |
 | `build/` | The content policy added to the built page, and the check of the published page |
 | `vite.config.ts` | The build: one HTML file, its policy and its SHA-256 hash |
