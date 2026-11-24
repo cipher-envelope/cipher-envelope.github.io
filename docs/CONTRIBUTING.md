@@ -1,17 +1,18 @@
 # Contributing
 
-This is the source of cipher-envelope, an encryption tool that will run entirely in the browser.
-It is at an early stage: there is no code yet. Comments on the plans in these guides are welcome
-now; once the app exists, so are corrections: a method that does not decrypt what it encrypted, a
+This is the source of cipher-envelope, an encryption tool that runs entirely in the browser. It is
+at an early stage, and corrections are welcome: a method that does not decrypt what it encrypted, a
 wrong statement about how secure a method is, a broken layout, or an accessibility problem.
 
 ## Report a problem
 
 [Open an issue](https://github.com/f-f-9-9-0-0/cipher-envelope/issues/new) and include:
 
-- where you used it: the address of the hosted app, or the release of the offline file;
-- the method, as the app names it, the kind of secret (password, generated key, public key or key
-  file) and the kind of input (text, text file or image);
+- where you used it: the hosted app's address, the release of the offline file, or, until those
+  exist, the commit you built it from;
+- the method, as the app names it, the kind of secret (password, generated key, key file, public
+  key, or a learning cipher's shift, keyword or rails) and the kind of input (text, or a file or
+  photo);
 - what is wrong, and what you expected;
 - the browser, and the window width or device.
 
@@ -26,16 +27,33 @@ envelope, a change to the interface), describe it in an issue first.
 
 ### Set up
 
-The app will be TypeScript built with Vite. The setup commands are added with the first code.
+Install Node 22.22.2 or later in the 22 line, 24.15.0 or later in the 24 line, or 26 or later
+(`.node-version` names 24), then:
+
+```bash
+npm ci
+npm run dev
+```
+
+`npm run dev` serves the app locally and reloads it as you edit. It serves the page without its
+content policy, which only the build adds, so check anything that loads or connects in the built
+file too (`npm run build`).
 
 ### Where things are
 
 | Path | What it holds |
 |---|---|
+| `index.html`, `src/main.ts`, `src/styles.css` | The page, its entry point and its styles |
+| `src/crypto/` | The methods, the envelope format, sealing and opening |
+| `src/ui/` | The workbench, its drawings, the palette and the English text |
+| `src/fonts/` | Playfair Display and IBM Plex, and the licence of every font the page carries |
+| `build/` | The content policy added to the built page |
+| `vite.config.ts` | The build: one HTML file, its policy and its SHA-256 hash |
+| `test/` | The tests |
+| `test/golden/` | Version-1 envelopes every release must still open, and the private-key file that opens the public-key one |
+| `scripts/golden-envelopes.mjs` | Adds new samples to `test/golden/` with Web Crypto directly, and never rewrites one; `--check` writes nothing |
 | `docs/` | These guides |
 | `LICENSE` | The MIT licence |
-
-The table grows as code lands.
 
 ### Rules for a change
 
@@ -45,11 +63,18 @@ The full list is in [`standards.md`](standards.md). The ones that catch most fir
 - Never put a password, a key, a private key or any derived key into the envelope unencrypted.
 - Do not add a network request after load, or a script from another origin.
 - Show an insecure method as insecure: in red, with very large text saying so.
-- Encrypting and then decrypting with the right secret must give back the original input.
+- For a method meant for real data, encrypting and then decrypting with the right secret must give
+  back the original input exactly.
 
 ### Check it
 
-The check commands are added with the first code.
+```bash
+npm run check
+```
+
+It runs the type check, the tests, the check that every sample in `test/golden/` is still there
+and unchanged, and the build. A change to a method or to the envelope must keep every envelope in
+`test/golden/` opening.
 
 ## Commits and pull requests
 
@@ -57,12 +82,13 @@ The check commands are added with the first code.
   `<scope>/<plain-description>`, with `app`, `ci` or `docs` as the scope.
 - Write commit subjects as one imperative sentence, for example
   `Fix the decryption of an empty text file`.
-- Keep a pull request to one change, and finish it before opening: each further push runs the
-  whole build again, so answer review feedback in one push.
+- Keep a pull request to one change, and finish it before opening it. Once there is a workflow, each
+  further push runs the whole build again, so answer review feedback in one push.
 - In the description, say what changed and why, what changes for a user, and which test commands
   you ran.
-- Pull requests from outside the project may wait for a maintainer to approve their workflow
-  run. The maintainer merges, and a merge publishes the app ([`releases.md`](releases.md)).
+- The maintainer merges. There is no workflow yet; once there is, a pull request from outside the
+  project may wait for a maintainer to approve its run, and a merge publishes the app
+  ([`releases.md`](releases.md)).
 
 ## What not to commit
 
