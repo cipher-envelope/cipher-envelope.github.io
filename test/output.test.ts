@@ -1,9 +1,34 @@
 import { expect, test } from 'vitest';
 import { sha256Hex, withPolicy } from '../build/csp';
+import { withNotices } from '../build/notices';
 import { checkOutput, OUTPUT } from '../build/output';
 
-// Pages built the way the build builds them, by withPolicy, then broken one rule at a time.
-const built = async (head: string, body: string) => (await withPolicy(`<!doctype html>\n<html lang="en">\n<head>${head}</head>\n<body>${body}</body>\n</html>\n`, OUTPUT)).html;
+// The notices as the build writes them, cut to the passage of each that the check looks for and two
+// of the addresses they name.
+const NOTICES = `<!--
+Third-party notices
+
+Copyright (c) 2026 borrowdale
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software
+Copyright (c) 2019 Preet Shihn
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software
+Copyright (C) 1993 by Sun Microsystems, Inc.
+<https://www.netlib.org/fdlibm/>
+Copyright 2017 The Playfair Display Project Authors
+Copyright 2019 IBM Corp.
+Copyright 2017 IBM Corp.
+Copyright (c) 2024 by Excalidraw.
+SIL OPEN FONT LICENSE Version 1.1
+http://scripts.sil.org/OFL
+-->`;
+// Pages built the way the build builds them, by withNotices and withPolicy, then broken one rule at
+// a time.
+const built = async (head: string, body: string) =>
+  (await withPolicy(withNotices(`<!doctype html>\n<html lang="en">\n<head>${head}</head>\n<body>${body}</body>\n</html>\n`, NOTICES), OUTPUT)).html;
 const hashLineOf = async (page: string) => `${await sha256Hex(new TextEncoder().encode(page))}  ${OUTPUT}\n`;
 
 const NOT_THE_START =
@@ -46,6 +71,14 @@ const EXTRA_SCRIPT_SOURCE = PAGE.replace('; style-src', " 'unsafe-inline'; style
 // The policy the browser applies is the tag at the start; a correct copy elsewhere must not pass it.
 const EMPTY_POLICY_WITH_COPY = PAGE.replace(POLICY_TAG, '<meta http-equiv="Content-Security-Policy" content=""/>').replace('</body>', `<!-- ${POLICY_TAG} --></body>`);
 const LOOSE_POLICY_HIDING_COPY = PAGE.replace(POLICY_TAG, `<meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-inline'; connect-src *" data-x='${POLICY_TAG}'>`);
+// The notices comment emptied; an MIT copyright left without its permission; a notice the build
+// stopped carrying; and one cut short.
+const NO_NOTICES = PAGE.replace(NOTICES, '<!--\n-->');
+const PERMISSION_MISSING = PAGE.replace('Copyright (c) 2026 borrowdale\n\nPermission', 'Copyright (c) 2026 borrowdale\n\nUse');
+const NOTICE_MISSING = PAGE.replace('Copyright (C) 1993 by Sun Microsystems, Inc.\n', '');
+const NOTICE_CUT = PAGE.replace('Copyright 2019 IBM Corp.', 'Copyright 2019 IBM');
+// An address that starts like one the notices name, and goes on.
+const LONGER_NOTICE_ADDRESS = PAGE.replace('</body>', '<!-- https://www.netlib.org/fdlibm/x --></body>');
 const CARRIAGE_RETURN = await built('\n<meta charset="utf-8">\n', '<script>console.log(1)\r\n</script>');
 const NUL = await built('\n<meta charset="utf-8">\n', '<script>console.log("\0")</script>');
 
@@ -111,6 +144,32 @@ test('an outside address without a scheme fails, naming it', async () => {
 });
 test('a socket address fails, naming it', async () => {
   expect(await checkOutput(OUTPUT, SOCKET_ADDRESS, await hashLineOf(SOCKET_ADDRESS))).toEqual(['cipher-envelope.html: names an outside address, wss://example.org/x']);
+});
+test('a page whose notices comment is empty fails, naming every notice the check looks for', async () => {
+  expect(await checkOutput(OUTPUT, NO_NOTICES, await hashLineOf(NO_NOTICES))).toEqual([
+    'cipher-envelope.html: carries no notice "Copyright (c) 2026 borrowdale\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software"',
+    'cipher-envelope.html: carries no notice "Copyright (c) 2019 Preet Shihn\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software"',
+    'cipher-envelope.html: carries no notice "Copyright (C) 1993 by Sun Microsystems, Inc."',
+    'cipher-envelope.html: carries no notice "Copyright 2017 The Playfair Display Project Authors"',
+    'cipher-envelope.html: carries no notice "Copyright 2019 IBM Corp."',
+    'cipher-envelope.html: carries no notice "Copyright 2017 IBM Corp."',
+    'cipher-envelope.html: carries no notice "Copyright (c) 2024 by Excalidraw."',
+    'cipher-envelope.html: carries no notice "SIL OPEN FONT LICENSE Version 1.1"',
+  ]);
+});
+test('an MIT copyright without its permission fails, though other licences hold the same words', async () => {
+  expect(await checkOutput(OUTPUT, PERMISSION_MISSING, await hashLineOf(PERMISSION_MISSING))).toEqual([
+    'cipher-envelope.html: carries no notice "Copyright (c) 2026 borrowdale\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software"',
+  ]);
+});
+test('a page without one of the notices fails, naming it', async () => {
+  expect(await checkOutput(OUTPUT, NOTICE_MISSING, await hashLineOf(NOTICE_MISSING))).toEqual(['cipher-envelope.html: carries no notice "Copyright (C) 1993 by Sun Microsystems, Inc."']);
+});
+test('a notice cut short counts as missing', async () => {
+  expect(await checkOutput(OUTPUT, NOTICE_CUT, await hashLineOf(NOTICE_CUT))).toEqual(['cipher-envelope.html: carries no notice "Copyright 2019 IBM Corp."']);
+});
+test('an address that only starts like one the notices name still fails, naming it', async () => {
+  expect(await checkOutput(OUTPUT, LONGER_NOTICE_ADDRESS, await hashLineOf(LONGER_NOTICE_ADDRESS))).toEqual(['cipher-envelope.html: names an outside address, https://www.netlib.org/fdlibm/x']);
 });
 test('a source map reference fails', async () => {
   expect(await checkOutput(OUTPUT, SOURCE_MAP, await hashLineOf(SOURCE_MAP))).toEqual(['cipher-envelope.html: refers to a source map']);
