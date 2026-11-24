@@ -6,7 +6,11 @@ wrong statement about how secure a method is, a broken layout, or an accessibili
 
 ## Report a problem
 
-[Open an issue](https://github.com/f-f-9-9-0-0/cipher-envelope/issues/new) and include:
+**For a security problem, do not open an issue:** report it privately, as
+[`SECURITY.md`](SECURITY.md) explains.
+
+For anything else, [open an issue](https://github.com/f-f-9-9-0-0/cipher-envelope/issues/new)
+and include:
 
 - where you used it: the hosted app's address, the release of the offline file, or, until those
   exist, the commit you built it from;

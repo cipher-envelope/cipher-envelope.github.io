@@ -139,10 +139,10 @@ There is no workflow yet. The one that builds and deploys the app follows these 
 ## Documentation
 
 - `README.md` introduces the app, and `LICENSE` holds the licence. `docs/` holds this guide,
-  [`patterns.md`](patterns.md), [`releases.md`](releases.md),
-  [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`third-party-notices.md`](third-party-notices.md),
-  which credits the fonts and the npm code built into the page. A new documentation file goes
-  under `docs/`.
+  [`patterns.md`](patterns.md), [`releases.md`](releases.md), [`CONTRIBUTING.md`](CONTRIBUTING.md),
+  [`SECURITY.md`](SECURITY.md), which says how to report a vulnerability privately, and
+  [`third-party-notices.md`](third-party-notices.md), which credits the fonts and the npm code built
+  into the page. A new documentation file goes under `docs/`.
 - Docs change in the pull request that changes the behaviour they describe.
 - State what was measured or checked, with its date, not what is expected to hold.
 
