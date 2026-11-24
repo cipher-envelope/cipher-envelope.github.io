@@ -92,15 +92,19 @@ the first 1,024 bytes; there is one content policy tag in the form the build wri
 the start is exactly the one written out in `build/output.ts`, closed straight after its content,
 with a hash for every script tag and nothing else; no script is loaded from a file, and none holds a
 carriage return or NUL, which the browser hashes differently; no `http`, `https`, `ws` or `wss`
-address and no `//host.domain` address written out, a tripwire for addresses as they are usually
-written rather than for every spelling a browser accepts; no source map, and no macOS or Linux
+address and no `//host.domain` address written out but those the third-party notices name, listed in
+`ALLOWED_ADDRESSES`, a tripwire for addresses as they are usually written rather than for every
+spelling a browser accepts; the third-party notices' passages; no source map, and no macOS or Linux
 home-folder path; and a `.sha256` that matches. The check writes out the policy and the page start,
 and hashes the scripts itself, so a change to the build's policy fails it until the check is changed
 too; it finds the script tags and hashes the file with the build's own code. `npm run check` runs it
 after the build, and so does the workflow on every pull request. The build itself refuses a page it
 did not produce as `index.html`, one with no inline script, one whose script is still loaded by
 `src` or is empty, and one that does not start with the lines `PAGE_START` writes out in
-`build/csp.ts`, which are how `index.html` starts (`vite.config.ts`, `build/csp.ts`).
+`build/csp.ts`, which are how `index.html` starts (`vite.config.ts`, `build/csp.ts`). It also
+refuses to bundle a package that ships no licence or notice file, and a notice holding text that
+would end the comment that carries it or read as a script or a content policy (`build/notices.ts`,
+[`third-party-notices.md`](third-party-notices.md)).
 `.gitattributes` keeps every text file, `index.html` included, with LF line endings in a fresh
 checkout. A Windows checkout made before `.gitattributes` needs `index.html` checked out again.
 

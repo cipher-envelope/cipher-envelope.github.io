@@ -43,4 +43,5 @@ See [`LICENSE`](LICENSE).
 ## License
 
 [MIT](LICENSE). The page also carries fonts under the SIL Open Font License 1.1, and code from other
-projects under their own licences: see [`docs/third-party-notices.md`](docs/third-party-notices.md).
+projects under their own licences. Their notices are in a comment at the start of the page: see
+[`docs/third-party-notices.md`](docs/third-party-notices.md).

@@ -124,6 +124,9 @@ a merge to `main` publishes. Read [Public content](#public-content) before the f
   or later: the `engines` range in `package.json`, the versions its test tools accept.
   `.node-version` names 24, the long-term-support release it is built and tested with.
 - Dependencies are pinned to exact versions, and the lockfile is committed.
+- The built page carries the licence and notices of every package and font it bundles, in a comment
+  straight after its content policy; the build refuses a package that ships none
+  ([`third-party-notices.md`](third-party-notices.md)).
 - A test arranges its input, acts (one operation, one round trip, or one flow through the page) and
   asserts literal values. Where none can be known, because the value is random or the point is that
   two results match, it asserts how the two relate. Its body has no loop, no `if` or conditional
