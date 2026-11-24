@@ -149,7 +149,8 @@ The workflow, [`.github/workflows/app.yml`](../.github/workflows/app.yml), follo
 - A pull request runs the check whatever files it changes: the check is required on `main`, and a
   run that a path filter skipped would never report.
 - The deploy and release jobs use the page the check job built and checked; neither builds it
-  again.
+  again. The Pages upload runs in a job of its own before the deploy job: in one job, the deploy can
+  look for the upload before it is listed, and fail.
 - Steps print no secret and no environment dump.
 
 ## Documentation
