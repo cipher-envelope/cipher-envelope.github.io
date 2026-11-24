@@ -17,8 +17,36 @@ const PAGE_START = '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="ut
 const POLICY = /<meta\s+http-equiv="Content-Security-Policy"\s+content="([^"]*)">/gi;
 /** Addresses with a scheme, and scheme-less ones (`//host`) that a link or a refresh would follow. */
 const ADDRESS = /\b(?:https?|wss?):\/\/[^\s"'<>)]+|(?<![\w:/])\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)+/gi;
-/** Outside addresses the page may name. None yet: adding one is a deliberate edit here. */
-const ALLOWED_ADDRESSES: readonly string[] = [];
+/**
+ * Outside addresses the page may name: those the third-party notices name. Each is matched exactly,
+ * wherever it appears in the page. Adding one is a deliberate edit here.
+ */
+const ALLOWED_ADDRESSES: readonly string[] = [
+  'http://scripts.sil.org/OFL',
+  'https://github.com/clauseggers/Playfair-Display',
+  'https://github.com/rough-stuff/rough',
+  'https://github.com/pshihn/hachure-fill',
+  'https://github.com/pshihn/bezier-points',
+  'https://github.com/pshihn/points-on-path',
+  'https://github.com/pshihn/path-data-parser',
+  'https://www.netlib.org/fdlibm/',
+];
+/**
+ * A passage of each notice the page must carry (docs/third-party-notices.md). Written out here rather
+ * than taken from the build, so a notice the build stops carrying fails this check. An MIT notice is
+ * its copyright together with the start of its permission, as the licence lays them out: the
+ * permission's first words alone are in every font's licence too.
+ */
+const NOTICES: readonly string[] = [
+  'Copyright (c) 2026 borrowdale\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software',
+  'Copyright (c) 2019 Preet Shihn\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software',
+  'Copyright (C) 1993 by Sun Microsystems, Inc.',
+  'Copyright 2017 The Playfair Display Project Authors',
+  'Copyright 2019 IBM Corp.',
+  'Copyright 2017 IBM Corp.',
+  'Copyright (c) 2024 by Excalidraw.',
+  'SIL OPEN FONT LICENSE Version 1.1',
+];
 const MACHINE_PATH = /\/(?:Users|home)\/[\w.-]+/;
 const HASH_LINE = /^([0-9a-f]{64}) {2}(\S+)\n$/;
 
@@ -73,6 +101,9 @@ export async function checkOutput(file: string, page: string, hashLine: string):
 
   for (const address of new Set(page.match(ADDRESS))) {
     if (!ALLOWED_ADDRESSES.includes(address)) problems.push(`${file}: names an outside address, ${address}`);
+  }
+  for (const notice of NOTICES) {
+    if (!page.includes(notice)) problems.push(`${file}: carries no notice "${notice}"`);
   }
   if (/sourceMappingURL/i.test(page)) problems.push(`${file}: refers to a source map`);
   const path = MACHINE_PATH.exec(page);

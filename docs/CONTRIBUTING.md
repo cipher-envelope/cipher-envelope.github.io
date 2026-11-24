@@ -50,8 +50,8 @@ file too (`npm run build`).
 | `src/crypto/` | The methods, the envelope format, sealing and opening |
 | `src/ui/` | The start, which refuses to run in a frame; the workbench, its drawings, the palette and the English text |
 | `src/fonts/` | Playfair Display and IBM Plex, and the licence of every font the page carries |
-| `build/` | The content policy added to the built page, and the check of the published page |
-| `vite.config.ts` | The build: one HTML file, its policy and its SHA-256 hash |
+| `build/` | The third-party notices and the content policy added to the built page, and the check of the published page |
+| `vite.config.ts` | The build: one HTML file, its notices, its policy and its SHA-256 hash |
 | `test/` | The tests |
 | `test/golden/` | Version-1 envelopes every release must still open, and the private-key file that opens the public-key one |
 | `scripts/golden-envelopes.mjs` | Adds new samples to `test/golden/` with Web Crypto directly, and never rewrites one; `--check` writes nothing |
@@ -106,6 +106,8 @@ notes.
 
 The code is published under the MIT licence ([`../LICENSE`](../LICENSE)), provided as is, without
 warranty. Code you contribute is published under the same licence. Material you add from elsewhere
-needs a licence that allows publishing it here, and its source named.
+needs a licence that allows publishing it here, and its source named. The page carries the notices
+of every package and font it bundles: adding one is described in
+[`third-party-notices.md`](third-party-notices.md), "Adding a dependency or a font".
 
 [new-issue]: https://github.com/cipher-envelope/cipher-envelope.github.io/issues/new
