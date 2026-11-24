@@ -11,8 +11,8 @@ wrong statement about how secure a method is, a broken layout, or an accessibili
 
 For anything else, [open an issue][new-issue] and include:
 
-- where you used it: the hosted app's address, the release of the offline file, or, until those
-  exist, the commit you built it from;
+- where you used it: the hosted app's address, the release of the offline file, or the commit you
+  built it from;
 - the method, as the app names it, the kind of secret (password, generated key, key file, public
   key, or a learning cipher's shift, keyword or rails) and the kind of input (text, or a file or
   photo);

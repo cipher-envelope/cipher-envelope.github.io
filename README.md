@@ -26,11 +26,13 @@ written beside it. Each merge to `main` that changes the app deploys it to
 
 ## Status
 
-First version. Checked on 2026-11-24: built with `npm run build`, `dist/cipher-envelope.html`
-seals and opens in Chromium, served from a local server. Opening the file straight from disk, and
-Safari and Firefox, are not checked yet. As of 2026-11-24 GitHub Pages is not enabled and the
-workflow has not run, so nothing is hosted yet and there are no releases. The rules the project is
-built to are in [`docs/standards.md`](docs/standards.md).
+First version, released as
+[v0.1.0](https://github.com/cipher-envelope/cipher-envelope.github.io/releases/tag/v0.1.0) and
+served at <https://cipher-envelope.github.io/>, both since 2026-11-24. Checked on 2026-11-24: the
+hosted page and the release's offline file are the same bytes as a build of the release's commit,
+and the offline file, served from a local server, seals a text and opens it again in Chromium.
+Opening the file straight from disk, and Safari and Firefox, are not checked yet. The rules the
+project is built to are in [`docs/standards.md`](docs/standards.md).
 
 ## No warranty
 

@@ -100,16 +100,18 @@ The workflow needs these settings, which live outside the repository:
 Checked on 2026-11-24: all of these are set, and the `github-pages` environment accepts deploys from
 `main` only. The check runs on pull requests and passes. The first deploy failed: the upload and the
 deploy ran in one job, and the deploy looked for the upload before it was listed, so the upload now
-runs a job earlier. Not checked yet: the first successful deploy, the first release's attached files
-and their hash, and how GitHub handles a waiting run and a re-run of only the failed job.
+runs a job earlier. Checked since, the same day: deploys from `main` succeed, and the first release,
+v0.1.0, carries the page and its hash, which the downloaded file passes and which matches the hosted
+page byte for byte. Not checked yet: how GitHub handles a waiting run and a re-run of only the
+failed job.
 
 ## What is live now
 
-Nothing is live until the first deploy and the first release. Then:
+Since 2026-11-24, the first deploy and the first release:
 
 - The hosted app: the last successful deploy run on `main`. The tip of `main` can be ahead of it by
   documentation-only commits.
-- The offline file: the latest release, and its published hash.
+- The offline file: the latest release, and its published hash. The first is v0.1.0.
 
 ## Refreshing the pinned files
 
