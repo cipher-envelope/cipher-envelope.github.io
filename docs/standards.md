@@ -98,12 +98,14 @@ a merge to `main` publishes. Read [Public content](#public-content) before the f
   and other connections, its sub-resources and its form submissions. A policy cannot stop a page
   navigating away or using WebRTC; the app has no code that does either. It also allows inline
   styles and fonts from `data:` URLs, and nothing else: no images, frames or workers. A new kind of
-  asset needs a change to `build/csp.ts`.
+  asset needs a change to `build/csp.ts` and to the policy written out in `build/output.ts`.
 - The policy covers this page only, not other pages served from the same origin. A page there can
   frame this one and read what is typed into it. It can also register a service worker that
   answers for the app's address with a copy of its own, without the policy, and goes on answering
   after that page is gone. So the hosted app is served from an origin it does not share with any
   other page ([`releases.md`](releases.md), the hosted app).
+- No other repository in the `cipher-envelope` organization publishes a GitHub Pages site. One
+  that did would be served from the app's own origin, at `cipher-envelope.github.io/<repository>`.
 - A policy in a `<meta>` tag cannot refuse being framed: `frame-ancestors` works only as a
   response header, and GitHub Pages sends no custom headers. As of 2026-11-20 the app does not
   refuse to run in a frame, so any site can frame the hosted app.
@@ -128,12 +130,18 @@ a merge to `main` publishes. Read [Public content](#public-content) before the f
 
 ## Workflow
 
-There is no workflow yet. The one that builds and deploys the app follows these rules:
+The workflow, [`.github/workflows/app.yml`](../.github/workflows/app.yml), follows these rules:
 
-- Only the job that deploys has `pages: write` and `id-token: write`. The workflow default is
-  `contents: read`.
+- Only the job that deploys has `pages: write` and `id-token: write`, and only the job that attaches
+  the offline file to a release has `contents: write`. The workflow default is `contents: read`.
 - Actions are pinned to a full commit SHA, with the version in a trailing comment.
 - The checkout sets `persist-credentials: false`. Jobs set `timeout-minutes`.
+- The check job builds the page that is deployed and released, so it restores no dependency cache
+  saved by another run, and installs with `npm ci --ignore-scripts`.
+- A pull request runs the check whatever files it changes: the check is required on `main`, and a
+  run that a path filter skipped would never report.
+- The deploy and release jobs use the page the check job built and checked; neither builds it
+  again.
 - Steps print no secret and no environment dump.
 
 ## Documentation

@@ -20,15 +20,17 @@ It is meant for two things:
 It seals up to 64 MiB at a time. The learning ciphers take typed text only, up to 1 MiB.
 
 It builds into a single HTML file that loads nothing from the network, with its SHA-256 hash
-written beside it. Hosting on GitHub Pages and releases with a published hash are described in
-[`docs/releases.md`](docs/releases.md); neither is set up yet.
+written beside it. Each merge to `main` that changes the app deploys it to
+<https://cipher-envelope.github.io/>, and each release carries the file with its hash
+([`docs/releases.md`](docs/releases.md)).
 
 ## Status
 
 First version. Checked on 2026-11-24: built with `npm run build`, `dist/cipher-envelope.html`
 seals and opens in Chromium, served from a local server. Opening the file straight from disk, and
-Safari and Firefox, are not checked yet. It is not hosted yet and there are no releases. The rules
-the project is built to are in [`docs/standards.md`](docs/standards.md).
+Safari and Firefox, are not checked yet. As of 2026-11-24 GitHub Pages is not enabled and the
+workflow has not run, so nothing is hosted yet and there are no releases. The rules the project is
+built to are in [`docs/standards.md`](docs/standards.md).
 
 ## No warranty
 

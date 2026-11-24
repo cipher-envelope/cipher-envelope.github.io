@@ -79,16 +79,30 @@ elsewhere) can be broken by a dependency or the build, not only by the code writ
 each source file would miss the combination.
 
 **Pattern.** A check reads the files that are actually published, the built app and the offline
-file, and fails on the first violation, naming the file.
+file, and fails naming the file and each rule it breaks.
 
 - The message is `<file>: <what is wrong>`.
 - A new rule for the output is one more assertion in the check that already reads it, not a new
   script.
 
-As of 2026-11-24, the build refuses a page it did not produce as `index.html`, one with no inline
-script, one whose script is still loaded by `src` or is empty, and one with no `<head>` for the
-policy (`vite.config.ts`, `build/csp.ts`). Each refusal names the file in the form above. The check
-that reads the whole published output is not built yet.
+**Reference.** `build/output.ts` checks the page the build wrote: it starts exactly as `index.html`
+does, with `<!doctype html>`, `<html lang="en">`, `<head>` and `<meta charset="utf-8">`, one per
+line, then the content policy, so nothing comes before the policy and the charset ends well within
+the first 1,024 bytes; there is one content policy tag in the form the build writes, and the one at
+the start is exactly the one written out in `build/output.ts`, closed straight after its content,
+with a hash for every script tag and nothing else; no script is loaded from a file, and none holds a
+carriage return or NUL, which the browser hashes differently; no `http`, `https`, `ws` or `wss`
+address and no `//host.domain` address written out, a tripwire for addresses as they are usually
+written rather than for every spelling a browser accepts; no source map, and no macOS or Linux
+home-folder path; and a `.sha256` that matches. The check writes out the policy and the page start,
+and hashes the scripts itself, so a change to the build's policy fails it until the check is changed
+too; it finds the script tags and hashes the file with the build's own code. `npm run check` runs it
+after the build, and so does the workflow on every pull request. The build itself refuses a page it
+did not produce as `index.html`, one with no inline script, one whose script is still loaded by
+`src` or is empty, and one that does not start with the lines `PAGE_START` writes out in
+`build/csp.ts`, which are how `index.html` starts (`vite.config.ts`, `build/csp.ts`).
+`.gitattributes` keeps every text file, `index.html` included, with LF line endings in a fresh
+checkout. A Windows checkout made before `.gitattributes` needs `index.html` checked out again.
 
 ## Open every seal before offering it
 
