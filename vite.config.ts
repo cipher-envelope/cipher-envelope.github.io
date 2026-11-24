@@ -2,8 +2,7 @@ import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import { sha256Hex, withPolicy } from './build/csp.ts';
-
-const OUTPUT = 'cipher-envelope.html';
+import { OUTPUT } from './build/output.ts';
 
 // After everything is inlined: add the policy, rename the page, and publish its SHA-256 beside it.
 function offlineFile(): Plugin {

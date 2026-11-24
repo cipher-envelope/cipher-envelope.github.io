@@ -14,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "golden:check": "node scripts/golden-envelopes.mjs --check",
-    "check": "npm run typecheck && npm test && npm run golden:check && npm run build"
+    "output:check": "node scripts/check-output.mjs",
+    "check": "npm run typecheck && npm test && npm run golden:check && npm run build && npm run output:check"
   },
   "dependencies": {
     "@borrowdale/core": "0.8.0",
