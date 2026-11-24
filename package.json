@@ -1,0 +1,31 @@
+{
+  "name": "cipher-envelope",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Encrypt text, files and photos in the browser into an envelope that records the method and never the secret.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "golden:check": "node scripts/golden-envelopes.mjs --check",
+    "check": "npm run typecheck && npm test && npm run golden:check && npm run build"
+  },
+  "dependencies": {
+    "@borrowdale/core": "0.8.0",
+    "@borrowdale/fills": "0.8.0",
+    "@borrowdale/text": "0.8.0"
+  },
+  "devDependencies": {
+    "jsdom": "31.0.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.6",
+    "vite-plugin-singlefile": "2.3.4",
+    "vitest": "5.1.0"
+  }
+}
