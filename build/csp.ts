@@ -11,7 +11,7 @@ const SCRIPT = /<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
  * browser close the head before the policy and ignore it. Written out rather than matched, so nothing
  * can match loosely: a change to the start of `index.html` is made here and in `build/output.ts`.
  */
-const PAGE_START = '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">';
+export const PAGE_START = '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">';
 
 /** A script tag in a page, in any letter case. */
 export interface Script {
