@@ -7,8 +7,7 @@ one privately, so that it can be fixed before it is public.
 
 Do not open a public issue. Use GitHub's private reporting instead: on the repository's
 **Security** tab, choose **Report a vulnerability**
-([direct link](https://github.com/f-f-9-9-0-0/cipher-envelope/security/advisories/new)). Only you
-and the maintainers see the report.
+([direct link][advisory]). Only you and the maintainers see the report.
 
 Include:
 
@@ -43,3 +42,5 @@ about.**
 
 The maintainer replies in the private report, fixes the problem, and publishes the advisory once
 the fix is out. There is no release yet, so a fix lands in `main`.
+
+[advisory]: https://github.com/cipher-envelope/cipher-envelope.github.io/security/advisories/new

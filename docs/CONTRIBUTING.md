@@ -9,8 +9,7 @@ wrong statement about how secure a method is, a broken layout, or an accessibili
 **For a security problem, do not open an issue:** report it privately, as
 [`SECURITY.md`](SECURITY.md) explains.
 
-For anything else, [open an issue](https://github.com/f-f-9-9-0-0/cipher-envelope/issues/new)
-and include:
+For anything else, [open an issue][new-issue] and include:
 
 - where you used it: the hosted app's address, the release of the offline file, or, until those
   exist, the commit you built it from;
@@ -49,13 +48,15 @@ file too (`npm run build`).
 |---|---|
 | `index.html`, `src/main.ts`, `src/styles.css` | The page, its entry point and its styles |
 | `src/crypto/` | The methods, the envelope format, sealing and opening |
-| `src/ui/` | The workbench, its drawings, the palette and the English text |
+| `src/ui/` | The start, which refuses to run in a frame; the workbench, its drawings, the palette and the English text |
 | `src/fonts/` | Playfair Display and IBM Plex, and the licence of every font the page carries |
-| `build/` | The content policy added to the built page |
+| `build/` | The content policy added to the built page, and the check of the published page |
 | `vite.config.ts` | The build: one HTML file, its policy and its SHA-256 hash |
 | `test/` | The tests |
 | `test/golden/` | Version-1 envelopes every release must still open, and the private-key file that opens the public-key one |
 | `scripts/golden-envelopes.mjs` | Adds new samples to `test/golden/` with Web Crypto directly, and never rewrites one; `--check` writes nothing |
+| `scripts/check-output.mjs` | Runs the check of the published page on `dist/` |
+| `.github/workflows/app.yml` | The workflow: checks every pull request, deploys `main`, attaches the offline file to a release |
 | `docs/` | These guides |
 | `LICENSE` | The MIT licence |
 
@@ -77,8 +78,9 @@ npm run check
 ```
 
 It runs the type check, the tests, the check that every sample in `test/golden/` is still there
-and unchanged, and the build. A change to a method or to the envelope must keep every envelope in
-`test/golden/` opening.
+and unchanged, the build, and the check of the built page. The workflow runs the same on every pull
+request. A change to a method or to the envelope must keep every envelope in `test/golden/`
+opening.
 
 ## Commits and pull requests
 
@@ -86,12 +88,12 @@ and unchanged, and the build. A change to a method or to the envelope must keep 
   `<scope>/<plain-description>`, with `app`, `ci` or `docs` as the scope.
 - Write commit subjects as one imperative sentence, for example
   `Fix the decryption of an empty text file`.
-- Keep a pull request to one change, and finish it before opening it. Once there is a workflow, each
-  further push runs the whole build again, so answer review feedback in one push.
+- Keep a pull request to one change, and finish it before opening it: each further push runs the
+  whole check again, so answer review feedback in one push.
 - In the description, say what changed and why, what changes for a user, and which test commands
   you ran.
-- The maintainer merges. There is no workflow yet; once there is, a pull request from outside the
-  project may wait for a maintainer to approve its run, and a merge publishes the app
+- The maintainer merges once the check has passed. A pull request from outside the project may wait
+  for a maintainer to approve its workflow run, and a merge that changes the app publishes it
   ([`releases.md`](releases.md)).
 
 ## What not to commit
@@ -105,3 +107,5 @@ notes.
 The code is published under the MIT licence ([`../LICENSE`](../LICENSE)), provided as is, without
 warranty. Code you contribute is published under the same licence. Material you add from elsewhere
 needs a licence that allows publishing it here, and its source named.
+
+[new-issue]: https://github.com/cipher-envelope/cipher-envelope.github.io/issues/new

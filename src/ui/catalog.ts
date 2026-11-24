@@ -86,6 +86,8 @@ export const ERROR_TEXT: Record<ErrorCode, (detail?: string) => string> = {
 
 export const UI = {
   brand: 'cipher-envelope',
+  framed: 'cipher-envelope does not run inside another page, so that page cannot watch or steer what you type into it.',
+  framedOpen: 'To use it, open this address in a tab of its own:',
   viewSeal: 'Seal',
   viewOpen: 'Open',
   noWarranty: 'No warranty: you use this at your own risk.',

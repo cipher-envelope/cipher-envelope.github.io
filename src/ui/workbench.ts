@@ -465,7 +465,10 @@ function saveFile(name: string, contents: BlobPart, type: string): void {
 const INITIAL_METHOD: MethodId = 'aes-256-gcm';
 const PRIVATE_KEY_FILE = 'cipher-envelope-private-key.json';
 
-/** Builds the workbench in root and returns a function that removes its document-level listeners. */
+/**
+ * Builds the workbench in root and returns a function that removes its document-level listeners.
+ * A page mounts it only through `start` (`./start.ts`), which refuses to run in a frame.
+ */
 export function mountWorkbench(root: HTMLElement): () => void {
   root.classList.add('app');
   root.innerHTML = markup(INITIAL_METHOD);

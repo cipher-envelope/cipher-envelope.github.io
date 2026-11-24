@@ -1,0 +1,128 @@
+name: Check, deploy and release
+
+# Runs on every pull request, after each merge to main, and when a release is published. Each run
+# checks and builds the page and hands it on: a merge deploys it to GitHub Pages, and a release gets
+# it attached with its SHA-256. A merge that changes only the documentation starts no run, as there
+# is nothing to deploy. See docs/releases.md.
+#
+# A pull request runs the check whatever files it changes: the check is required on main, and a run
+# that a path filter skipped would never report, so the pull request could not merge.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - 'docs/**'
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check and build the page
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # A newer push to a pull request cancels its older run. Runs after merges share one group, so
+    # they run one at a time and deploy in the order of the merges: a running one is never
+    # cancelled, and one still waiting gives way to a newer merge's run, which carries its changes.
+    # A release's run has a group of its own.
+    concurrency:
+      group: app-check-${{ github.event_name == 'push' && 'main' || github.event.pull_request.number || github.run_id }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The page this job builds is the one deployed and released, so the job restores no
+      # dependency cache saved by another run, and skips install scripts, which the build does not
+      # need.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - name: Keep the page for the deploy and release jobs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: page
+          path: |
+            dist/cipher-envelope.html
+            dist/cipher-envelope.html.sha256
+          if-no-files-found: error
+          retention-days: 1
+
+  # Deploys the page the check job built and checked, rather than building a second one.
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download the checked page
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: page
+      # The build writes no index.html, so the site's root would otherwise have no page.
+      - name: Lay out the site
+        run: |
+          mkdir _site
+          cp cipher-envelope.html _site/index.html
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: _site
+      - name: Deploy the site
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  release:
+    name: Attach the page to the release
+    if: github.event_name == 'release'
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      # A release can be made from any tag, and the check job builds the tag's commit, so only a
+      # commit on main is released.
+      - name: Check that the release's commit is on main
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "The release's commit $GITHUB_SHA is not on main." >&2
+            exit 1
+          fi
+      - name: Download the checked page
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: page
+          path: release
+      - name: Check the file against its hash
+        working-directory: release
+        run: sha256sum -c cipher-envelope.html.sha256
+      - name: Attach the file and its hash to the release
+        working-directory: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" cipher-envelope.html cipher-envelope.html.sha256 --repo "$GITHUB_REPOSITORY"

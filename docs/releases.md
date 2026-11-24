@@ -3,16 +3,16 @@
 How a change gets from a merged pull request into the hosted app and the offline file, how pinned
 dependencies are refreshed, and how to roll back.
 
-There is no workflow yet. This guide records the release model as decided; the workflow's
-commands are added when it lands.
+[`.github/workflows/app.yml`](../.github/workflows/app.yml) does what this guide describes: it
+checks every pull request, deploys the app from `main`, and attaches the offline file to a release.
 
 The app is published in two forms:
 
-- **The hosted app**, on GitHub Pages, rebuilt from `main`, on a custom domain of its own: a
-  subdomain used for nothing else, so the app has an origin it does not share with any other page
-  (see [`standards.md`](standards.md), the page's policy). A project site's default address shares
-  `<owner>.github.io` with every other site of the account, and a project site under the account's
-  own custom domain shares that domain.
+- **The hosted app**, at <https://cipher-envelope.github.io/>, on GitHub Pages, rebuilt from `main`.
+  It is the site of the `cipher-envelope` organization, which publishes no other site, so the app
+  has an origin it does not share with any other page (see [`standards.md`](standards.md), the
+  page's policy). A project site's address, `<owner>.github.io/<repository>`, would share its
+  owner's site's origin, and so would an address under the owner's custom domain.
 - **The offline file**, a single HTML file attached to a GitHub release, with its hash published
   beside it. A matching hash shows that a download is, byte for byte, the file attached to that
   release; it does not show that the release itself is genuine.
@@ -23,7 +23,7 @@ Nothing is published to npm.
 
 | Change | What it takes to be live |
 |---|---|
-| The app's source, its dependencies, the workflow | For the hosted app, the merge: the push to `main` builds and deploys when every check passes. For the offline file, a release |
+| Anything but `README.md`, `LICENSE` and `docs/`: the app's source, its tests, its dependencies, the workflow | For the hosted app, the merge: the push to `main` builds and deploys when every check passes. For the offline file, a release |
 | Only `README.md`, `LICENSE` or files under `docs/` | Nothing to deploy. The app is unchanged |
 | A Pages setting | A new deploy |
 
@@ -49,17 +49,23 @@ yet. The build also writes `dist/cipher-envelope.html.sha256`.
 
 ## After the merge
 
-1. Watch the workflow run for the merge commit.
+1. Watch the workflow run for the merge commit: `gh run list --workflow app.yml --branch main`.
 2. When the deploy is green, open the hosted app and check the change. Allow a few minutes for
    caches.
 3. Record the run on the issue the pull request fixed, if there is one. `Fixes #N` closes the
    issue at merge, which is before the deploy finishes: reopen it if the deploy fails or the check
    on the hosted app does.
 
+If a deploy fails, re-run it only while its run is still the newest on `main`. Re-running an older
+run deploys its older page over a newer one, which rolls the app back. After a day the page the
+run built is gone, so re-run all its jobs, not only the failed one.
+
 ## Releasing the offline file
 
-1. The release workflow builds the single HTML file from a commit on `main`, computes its hash, and
-   attaches both to a new release. A file built on a local machine is never uploaded.
+1. Publish a release for a tag on `main`. The workflow builds and checks the page, checks that
+   the tag's commit is reachable from `main`, and attaches the page with the hash the build wrote.
+   A file built on a local machine is never uploaded. That check guards against a release made by
+   mistake from a branch that was never merged; someone who can publish releases can get past it.
 2. Download the attached file and its hash file, and check them with `sha256sum -c
    cipher-envelope.html.sha256` (on macOS, `shasum -a 256 -c cipher-envelope.html.sha256`). Then
    open the file as under "Before the merge".
@@ -67,9 +73,40 @@ yet. The build also writes `dist/cipher-envelope.html.sha256`.
 A release asset is never replaced in place: the hash already published would no longer match. A
 corrected file is a new release.
 
+The workflow attaches the files after the release is published, so releases must not be made
+immutable: an immutable release accepts no files once it is published. If the run fails, or attaches
+only one of the two files, the release stays published without them. Delete it. A release runs the
+workflow and the code of its tag's commit, so if the cause is in either, fix it on `main` and
+publish a new release from a new tag there; otherwise publish the release again.
+
+## Repository settings
+
+The workflow needs these settings, which live outside the repository:
+
+- Pages builds from GitHub Actions, and the `github-pages` environment accepts deploys from `main`
+  only.
+- The "Protect main" rule requires the check by its job name, "Check and build the page"; the
+  rule can name it once the check has run on a pull request. A renamed job no longer reports under
+  that name, so no pull request can merge until the rule is updated.
+- In the Actions settings, every action must be pinned to a full commit SHA, and only GitHub's own
+  actions are allowed.
+- Members of the organization must not be able to create Pages sites. Its owners still can, so
+  keeping to "No other repository in the `cipher-envelope` organization publishes a GitHub Pages
+  site" ([`standards.md`](standards.md)) is up to them.
+- A first-time contributor's pull request runs the workflow only after a maintainer approves it.
+- Releases are not immutable (see "Releasing the offline file").
+
+Checked on 2026-11-24: only the last two are set. Pages is not enabled, "Protect main" does not
+require the check yet, neither Actions setting is on, members can still create Pages sites, and
+the workflow has not run on GitHub. Not checked yet: how GitHub handles waiting runs and re-runs,
+that a waiting run gives way to a newer one, and that re-running all the jobs of a run whose page
+has expired builds and uploads the page again.
+The first pull request shows the check, the first merge the deploy, and the first release the
+attached files and their hash.
+
 ## What is live now
 
-Nothing is live yet. Once the workflows exist:
+Nothing is live until the first deploy and the first release. Then:
 
 - The hosted app: the last successful deploy run on `main`. The tip of `main` can be ahead of it by
   documentation-only commits.
@@ -88,12 +125,14 @@ offline file.
 ### Actions
 
 Actions in the workflow are pinned to a commit SHA. To move one, replace the SHA and the version
-comment together, and read the action's release notes first: the deploy job can write to Pages.
+comment together, and read the action's release notes first: the deploy job can write to Pages,
+and the release job to releases.
 
 ## Rolling back
 
 Revert the pull request and merge the revert. The merge deploys the previous app like any other
-change. A revert that is merged but whose run failed has rolled nothing back.
+change. A revert that is merged but whose run failed has rolled nothing back. Re-running an older
+run also puts its page back, but leaves `main` as it is, so the next merge undoes it.
 
 What a rollback does not undo:
 
