@@ -1,0 +1,8 @@
+{
+  "format": "cipher-envelope",
+  "version": 1,
+  "method": "aes-256-gcm",
+  "opensWith": "generated",
+  "nonce": "oKGio6Slpqeoqaqr",
+  "ciphertext": "udE9UIaXMW0RaoBR0-NJ6DL1nDs2CQ3hBWH3jTohrFofu-mvzf6SQFQGpbucFCdKeNEV66brm7JqmcOxgHVDLeoF663kYAC8lN8WpVCJr4qbyE4SIq0OK5etpluFpDHEYrlqNCuKNMTK5j4HARWIs5elIQ6rq6Csup57jrW2Tw93n5sVKzeKvL5-"
+}

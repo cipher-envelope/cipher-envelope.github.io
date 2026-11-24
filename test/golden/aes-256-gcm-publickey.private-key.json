@@ -1,0 +1,7 @@
+{
+  "format": "cipher-envelope-key",
+  "version": 1,
+  "kind": "x25519-private",
+  "publicKey": "3p7bfXt9wbTTW2HC7OQ1Nz-DQ8hbeGdNrfx-FG-IK08",
+  "privateKey": "MC4CAQAwBQYDK2VuBCIEIF2rCH5iSopLeeF_i4OADuZvO7EpJhi2_Rwviyf_iODr"
+}

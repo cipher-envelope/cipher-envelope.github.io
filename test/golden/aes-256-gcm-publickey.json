@@ -1,0 +1,13 @@
+{
+  "format": "cipher-envelope",
+  "version": 1,
+  "method": "aes-256-gcm",
+  "opensWith": "publickey",
+  "kdf": {
+    "id": "x25519-hkdf-sha256",
+    "salt": "AAECAwQFBgcICQoLDA0ODw",
+    "epk": "hSDwCYkwp1R0i33ctD73Wg2_Og0mOBr066SpjqqbTmo"
+  },
+  "nonce": "oKGio6Slpqeoqaqr",
+  "ciphertext": "BFmq98zvAQOXPEcbluOUrMRhzPOjOBgYpuMPw6MP54ZVnh7TAqYL1Um8aqaKTzemHvTvMshyAIFXad4rDv6Xt7PNhNIFpA"
+}
