@@ -56,9 +56,10 @@ yet. The build also writes `dist/cipher-envelope.html.sha256`.
    issue at merge, which is before the deploy finishes: reopen it if the deploy fails or the check
    on the hosted app does.
 
-If a deploy fails, re-run it only while its run is still the newest on `main`. Re-running an older
-run deploys its older page over a newer one, which rolls the app back. After a day the page the
-run built is gone, so re-run all its jobs, not only the failed one.
+If a deploy fails, re-run only its failed job, and only while its run is still the newest on
+`main`: re-running an older run deploys its older page over a newer one, which rolls the app back.
+Re-running all of a run's jobs uploads a second site, which the deploy refuses, and the uploaded
+site expires after a day; after that, only a new run on `main`, from the next merge, deploys.
 
 ## Releasing the offline file
 
@@ -96,13 +97,11 @@ The workflow needs these settings, which live outside the repository:
 - A first-time contributor's pull request runs the workflow only after a maintainer approves it.
 - Releases are not immutable (see "Releasing the offline file").
 
-Checked on 2026-11-24: only the last two are set. Pages is not enabled, "Protect main" does not
-require the check yet, neither Actions setting is on, members can still create Pages sites, and
-the workflow has not run on GitHub. Not checked yet: how GitHub handles waiting runs and re-runs,
-that a waiting run gives way to a newer one, and that re-running all the jobs of a run whose page
-has expired builds and uploads the page again.
-The first pull request shows the check, the first merge the deploy, and the first release the
-attached files and their hash.
+Checked on 2026-11-24: all of these are set, and the `github-pages` environment accepts deploys from
+`main` only. The check runs on pull requests and passes. The first deploy failed: the upload and the
+deploy ran in one job, and the deploy looked for the upload before it was listed, so the upload now
+runs a job earlier. Not checked yet: the first successful deploy, the first release's attached files
+and their hash, and how GitHub handles a waiting run and a re-run of only the failed job.
 
 ## What is live now
 
